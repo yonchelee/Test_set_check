@@ -42,12 +42,13 @@
     <section class="guide">
       <h2 class="guide-title">📝 사용 방법</h2>
       <ol class="guide-list">
-        <li><strong>파트를 선택</strong>하세요. (아래 '내 파트' 드롭다운)</li>
+        <li><strong>파트를 선택</strong>하고 <strong>작성자·비밀번호</strong>를 입력하세요.</li>
         <li>선택한 파트 행의 각 제품군 셀을 클릭해 <strong>수량 및 사유를 입력</strong>하세요.</li>
+        <li>입력 시 설정한 <strong>비밀번호로 항목이 보호</strong>됩니다. 수정·삭제하려면 같은 비밀번호가 필요합니다. (임의 삭제 방지)</li>
       </ol>
     </section>
 
-    <!-- 컨트롤 바: 내 파트 선택 / 작성자 -->
+    <!-- 컨트롤 바: 내 파트 선택 / 작성자 / 비밀번호 -->
     <section class="controls">
       <div class="control-group">
         <label for="partSelect">내 파트</label>
@@ -56,9 +57,15 @@
         </select>
       </div>
       <div class="control-group">
-        <label for="authorInput">작성자 (선택)</label>
+        <label for="authorInput">작성자</label>
         <input id="authorInput" type="text" placeholder="이름 입력" maxlength="20" />
       </div>
+      <div class="control-group">
+        <label for="passwordInput">비밀번호</label>
+        <input id="passwordInput" type="password" placeholder="작성자 비밀번호" maxlength="30" autocomplete="off" />
+      </div>
+      <div class="control-spacer"></div>
+      <span id="adminBadge" class="admin-badge hidden">🔑 관리자 모드 · 전체 권한</span>
     </section>
 
     <p class="edit-hint" id="editHint">
@@ -103,6 +110,7 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <h3 id="modalTitle">의견 입력</h3>
       <p class="modal-cell-info" id="modalCellInfo"></p>
+      <p class="modal-lock" id="modalLock"></p>
       <form id="editForm">
         <label for="qtyInput">제안 수량 (대)</label>
         <input id="qtyInput" type="number" min="0" max="9999" step="1" required />

@@ -8,6 +8,10 @@
 // 모델별 시료 수 기준값 (대)
 export const BASELINE = 20;
 
+// 관리자 비밀번호 — 이 값을 입력하면 모든 파트의 데이터를 입력/수정/삭제할 수 있습니다.
+// (주의: 클라이언트 측 보호용입니다. 변경하려면 이 값을 수정하세요.)
+export const ADMIN_PASSWORD = "1657";
+
 // 그룹 내 파트 목록 (표의 행)
 // key: Firebase/내부 저장용 안전 키(영문), label: 화면 표시 이름(한글)
 export const PARTS = [

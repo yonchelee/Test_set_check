@@ -10,6 +10,7 @@ import {
   PARTS,
   PRODUCT_GROUPS,
   FIREBASE_CONFIG,
+  ADMIN_PASSWORD,
   isFirebaseConfigured,
 } from "./config.js";
 
@@ -21,8 +22,9 @@ const LS_PART_KEY = "ssc_my_part";           // 내 파트 기억
 const LS_AUTHOR_KEY = "ssc_author";          // 작성자 기억
 
 let mode = "demo";          // "live" | "demo"
-let data = {};              // { partKey: { groupKey: { quantity, reason, author, updatedAt } } }
+let data = {};              // { partKey: { groupKey: { quantity, reason, author, pwHash, updatedAt } } }
 let myPart = "";            // 현재 선택된 파트 key
+let adminMode = false;      // 관리자 비밀번호 입력 시 true (전체 권한)
 let chart = null;
 
 // Firebase 핸들 (live 모드에서만 채워짐)
@@ -38,6 +40,8 @@ const el = {
   connStatus: $("connStatus"),
   partSelect: $("partSelect"),
   authorInput: $("authorInput"),
+  passwordInput: $("passwordInput"),
+  adminBadge: $("adminBadge"),
   exportBtn: $("exportBtn"),
   editHint: $("editHint"),
   summaryCards: $("summaryCards"),
@@ -53,8 +57,31 @@ const el = {
   reasonInput: $("reasonInput"),
   cancelBtn: $("cancelBtn"),
   deleteBtn: $("deleteBtn"),
+  modalLock: $("modalLock"),
   footerStatus: $("footerStatus"),
 };
+
+// ----------------------------------------------------------------------------
+// 비밀번호 처리
+// ----------------------------------------------------------------------------
+// 비밀번호는 평문 저장하지 않고 SHA-256 해시로 저장/비교합니다.
+async function sha256(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function currentPassword() {
+  return el.passwordInput ? el.passwordInput.value : "";
+}
+
+// 현재 입력된 비밀번호로 해당 셀을 수정/삭제할 수 있는지 검사
+async function canModify(cell) {
+  if (adminMode) return true;                 // 관리자: 모든 권한
+  if (!cell || !cell.pwHash) return true;     // 신규/미보호(레거시) 항목
+  const pw = currentPassword();
+  if (!pw) return false;
+  return (await sha256(pw)) === cell.pwHash;
+}
 
 // ----------------------------------------------------------------------------
 // 헬퍼
@@ -229,7 +256,7 @@ function renderMatrix() {
 
   for (const p of PARTS) {
     const tr = document.createElement("tr");
-    const editable = p.key === myPart;
+    const editable = adminMode || p.key === myPart;   // 관리자는 모든 행 편집 가능
     if (editable) tr.classList.add("editable-row");
 
     const th = document.createElement("th");
@@ -247,11 +274,12 @@ function renderMatrix() {
 
       if (cell && qty != null && !isNaN(qty)) {
         const reasonText = cell.reason ? `사유: ${cell.reason}` : "사유 미입력";
-        const authorText = cell.author ? ` (${cell.author})` : "";
+        const authorText = cell.author ? ` · 작성자: ${cell.author}` : "";
+        const lockText = cell.pwHash ? " 🔒보호됨" : "";
         div.innerHTML =
-          `<span class="qty">${qty}</span><span class="unit">대</span>` +
+          `<span class="qty">${qty}</span><span class="unit">대${cell.pwHash ? " 🔒" : ""}</span>` +
           (cell.reason ? `<span class="reason-mark">📝 ${escapeHtml(cell.reason)}</span>` : "");
-        div.title = `${reasonText}${authorText}`;
+        div.title = `${reasonText}${authorText}${lockText}`;
       } else {
         div.innerHTML = `<span class="qty">—</span>` +
           (editable ? `<span class="reason-mark">클릭하여 입력</span>` : "");
@@ -430,6 +458,18 @@ function openModal(partKey, groupKey) {
   el.qtyInput.value = existing && existing.quantity != null ? existing.quantity : BASELINE;
   el.reasonInput.value = existing && existing.reason ? existing.reason : "";
   el.deleteBtn.style.display = existing ? "" : "none";
+
+  // 보호 상태 안내
+  if (adminMode) {
+    el.modalLock.className = "modal-lock open";
+    el.modalLock.textContent = "🔑 관리자 모드 — 비밀번호 없이 수정·삭제할 수 있습니다.";
+  } else if (existing && existing.pwHash) {
+    el.modalLock.className = "modal-lock locked";
+    el.modalLock.textContent = `🔒 보호된 항목${existing.author ? ` (작성자: ${existing.author})` : ""} — 수정·삭제하려면 상단에 작성자 비밀번호를 입력하세요.`;
+  } else {
+    el.modalLock.className = "modal-lock";
+    el.modalLock.textContent = "🔐 저장 시 상단에 입력한 비밀번호로 이 항목이 보호됩니다.";
+  }
   el.modalOverlay.classList.remove("hidden");
   el.qtyInput.focus();
   el.qtyInput.select();
@@ -440,6 +480,16 @@ function closeModal() {
   editingCell = { part: null, group: null };
 }
 
+function updateEditHint() {
+  if (adminMode) {
+    el.editHint.textContent = "🔑 관리자 모드: 모든 파트의 셀을 자유롭게 입력·수정·삭제할 수 있습니다.";
+  } else if (myPart) {
+    el.editHint.textContent = `선택한 파트: ${partLabel(myPart)} · 해당 행의 셀을 클릭해 입력하세요. (다른 파트 행은 읽기 전용)`;
+  } else {
+    el.editHint.textContent = "파트를 선택하면 해당 행의 셀을 클릭해 수량·사유를 입력할 수 있습니다.";
+  }
+}
+
 // ----------------------------------------------------------------------------
 // 이벤트 연결
 // ----------------------------------------------------------------------------
@@ -447,14 +497,23 @@ function wireEvents() {
   el.partSelect.addEventListener("change", () => {
     myPart = el.partSelect.value;
     localStorage.setItem(LS_PART_KEY, myPart);
-    el.editHint.textContent = myPart
-      ? `선택한 파트: ${partLabel(myPart)} · 해당 행의 셀을 클릭해 수량·사유를 입력하세요. (다른 파트 행은 읽기 전용)`
-      : "파트를 선택하면 해당 행의 셀을 클릭해 수량·사유를 입력할 수 있습니다.";
+    updateEditHint();
     renderMatrix();
   });
 
   el.authorInput.addEventListener("input", () => {
     localStorage.setItem(LS_AUTHOR_KEY, el.authorInput.value.trim());
+  });
+
+  // 비밀번호 입력 → 관리자 모드 판별
+  el.passwordInput.addEventListener("input", () => {
+    const wasAdmin = adminMode;
+    adminMode = el.passwordInput.value === ADMIN_PASSWORD;
+    el.adminBadge.classList.toggle("hidden", !adminMode);
+    if (adminMode !== wasAdmin) {
+      updateEditHint();
+      renderMatrix();
+    }
   });
 
   el.cancelBtn.addEventListener("click", closeModal);
@@ -471,10 +530,32 @@ function wireEvents() {
     if (!part || !group) return;
     const qty = parseInt(el.qtyInput.value, 10);
     if (isNaN(qty) || qty < 0) { alert("올바른 수량을 입력하세요."); return; }
+
+    const existing = getCell(part, group);
+    const pw = currentPassword();
+
+    // 보호된 기존 항목은 비밀번호(또는 관리자) 확인
+    if (!(await canModify(existing))) {
+      alert("비밀번호가 일치하지 않습니다.\n이 항목을 수정하려면 작성자 비밀번호 또는 관리자 비밀번호를 입력하세요.");
+      return;
+    }
+
+    // 저장할 보호 해시 결정
+    let pwHash;
+    if (existing && existing.pwHash) {
+      pwHash = existing.pwHash;          // 기존 잠금 유지 (관리자가 수정해도 원 작성자 비밀번호 유지)
+    } else if (adminMode) {
+      pwHash = null;                     // 관리자가 만든 신규/미보호 항목
+    } else {
+      if (!pw) { alert("임의 삭제 방지를 위해 상단에 작성자 비밀번호를 입력한 뒤 저장하세요."); return; }
+      pwHash = await sha256(pw);         // 신규 항목을 현재 비밀번호로 보호
+    }
+
     const payload = {
       quantity: qty,
       reason: el.reasonInput.value.trim(),
       author: el.authorInput.value.trim() || "",
+      pwHash: pwHash,
     };
     try {
       await writeCell(part, group, payload);
@@ -489,6 +570,11 @@ function wireEvents() {
   el.deleteBtn.addEventListener("click", async () => {
     const { part, group } = editingCell;
     if (!part || !group) return;
+    const existing = getCell(part, group);
+    if (!(await canModify(existing))) {
+      alert("비밀번호가 일치하지 않습니다.\n이 항목을 삭제하려면 작성자 비밀번호 또는 관리자 비밀번호를 입력하세요.");
+      return;
+    }
     if (!confirm("이 셀의 입력을 삭제할까요?")) return;
     try {
       await deleteCell(part, group);
@@ -503,7 +589,7 @@ function wireEvents() {
   el.exportBtn.addEventListener("click", exportCsv);
 
   // 초기 힌트 갱신
-  if (myPart) el.partSelect.dispatchEvent(new Event("change"));
+  updateEditHint();
 }
 
 function flashStatus(msg) {

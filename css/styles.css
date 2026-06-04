@@ -199,7 +199,28 @@ select:focus, input:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(47,109,246,.14);
 }
 #partSelect { min-width: 220px; }
-#authorInput { min-width: 160px; }
+#authorInput { min-width: 140px; }
+#passwordInput { min-width: 150px; }
+
+.admin-badge {
+  align-self: center;
+  background: #fdeae0;
+  color: #c25316;
+  border: 1px solid #f3c6ab;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.modal-lock {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.modal-lock.locked { color: #c25316; }
+.modal-lock.open { color: var(--c-equal-text); }
 
 .edit-hint {
   font-size: 12.5px;
