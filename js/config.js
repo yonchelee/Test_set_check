@@ -42,13 +42,14 @@ export const PRODUCT_GROUPS = [
 // "로컬 데모 모드"(브라우저 localStorage)로 동작합니다.
 // ============================================================================
 export const FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyClKl_dU5Zfphr20agiXRkhLWzS_DAyGIM",
+  authDomain: "test-set-check.firebaseapp.com",
+  databaseURL: "https://test-set-check-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "test-set-check",
+  storageBucket: "test-set-check.firebasestorage.app",
+  messagingSenderId: "320629406502",
+  appId: "1:320629406502:web:5ebd95f443cd1218ae1fe7",
+  measurementId: "G-2M7Y33THL2",
 };
 
 // Firebase 설정이 실제 값으로 채워졌는지 판별 (플레이스홀더면 데모 모드)
