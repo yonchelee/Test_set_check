@@ -107,6 +107,34 @@ body {
   padding: 22px 20px 60px;
 }
 
+/* ---------- 추진 배경 / 목적 ---------- */
+.purpose {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+.purpose-title {
+  margin: 0 0 10px;
+  font-size: 15.5px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+}
+.purpose-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.purpose-list strong { color: var(--primary); font-weight: 700; }
+
 /* ---------- 컨트롤 ---------- */
 .controls {
   display: flex;
