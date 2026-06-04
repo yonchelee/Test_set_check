@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>선행기구개발그룹 · 모델별 시료 수량 기준 의견 취합</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- 데모/실시간 모드 안내 배너 -->
+  <div id="modeBanner" class="mode-banner hidden"></div>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="title-block">
+        <h1>선행기구개발그룹 · 모델별 시료 수량 기준 의견 취합</h1>
+        <p class="subtitle">
+          현재 기준 <strong id="baselineLabel">20대</strong> · 각 파트가 제품군별 적정 수량과 사유를 입력해 주세요.
+        </p>
+      </div>
+      <div class="conn-status" id="connStatus" title="연결 상태">
+        <span class="dot"></span><span class="conn-text">연결 확인 중…</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 컨트롤 바: 내 파트 선택 / 작성자 / 내보내기 -->
+    <section class="controls">
+      <div class="control-group">
+        <label for="partSelect">내 파트</label>
+        <select id="partSelect" aria-label="내 파트 선택">
+          <option value="">— 파트를 선택하세요 —</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="authorInput">작성자 (선택)</label>
+        <input id="authorInput" type="text" placeholder="이름 입력" maxlength="20" />
+      </div>
+      <div class="control-spacer"></div>
+      <button id="exportBtn" class="btn-secondary" type="button">CSV 내보내기</button>
+    </section>
+
+    <p class="edit-hint" id="editHint">
+      파트를 선택하면 해당 행의 셀을 클릭해 수량·사유를 입력할 수 있습니다.
+    </p>
+
+    <!-- 요약 카드 -->
+    <section class="summary-cards" id="summaryCards"></section>
+
+    <!-- 매트릭스 표 -->
+    <section class="matrix-wrap">
+      <table class="matrix" id="matrixTable" aria-label="파트별 제품군 시료 수량 매트릭스">
+        <thead id="matrixHead"></thead>
+        <tbody id="matrixBody"></tbody>
+      </table>
+    </section>
+
+    <!-- 차트 -->
+    <section class="chart-section">
+      <h2 class="section-title">제품군별 평균 제안 수량 (기준선 = <span id="chartBaseline">20</span>대)</h2>
+      <div class="chart-wrap">
+        <canvas id="avgChart"></canvas>
+      </div>
+    </section>
+
+    <!-- 범례 -->
+    <section class="legend">
+      <span class="legend-item"><span class="swatch sw-empty"></span>미입력</span>
+      <span class="legend-item"><span class="swatch sw-equal"></span>기준과 동일</span>
+      <span class="legend-item"><span class="swatch sw-low"></span>기준보다 적음</span>
+      <span class="legend-item"><span class="swatch sw-high"></span>기준보다 많음</span>
+    </section>
+  </main>
+
+  <!-- 입력 모달 -->
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">의견 입력</h3>
+      <p class="modal-cell-info" id="modalCellInfo"></p>
+      <form id="editForm">
+        <label for="qtyInput">제안 수량 (대)</label>
+        <input id="qtyInput" type="number" min="0" max="9999" step="1" required />
+
+        <label for="reasonInput">사유</label>
+        <textarea id="reasonInput" rows="4" placeholder="해당 수량을 제안하는 이유를 입력하세요"></textarea>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-text" id="deleteBtn">입력 삭제</button>
+          <div class="modal-actions-right">
+            <button type="button" class="btn-secondary" id="cancelBtn">취소</button>
+            <button type="submit" class="btn-primary">저장</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <span id="footerStatus"></span>
+  </footer>
+
+  <!-- Chart.js (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- 앱 로직 (ES module) -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
