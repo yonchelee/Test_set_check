@@ -38,7 +38,16 @@
       </ul>
     </section>
 
-    <!-- 컨트롤 바: 내 파트 선택 / 작성자 / 내보내기 -->
+    <!-- 사용 방법 가이드 -->
+    <section class="guide">
+      <h2 class="guide-title">📝 사용 방법</h2>
+      <ol class="guide-list">
+        <li><strong>파트를 선택</strong>하세요. (아래 '내 파트' 드롭다운)</li>
+        <li>선택한 파트 행의 각 제품군 셀을 클릭해 <strong>수량 및 사유를 입력</strong>하세요.</li>
+      </ol>
+    </section>
+
+    <!-- 컨트롤 바: 내 파트 선택 / 작성자 -->
     <section class="controls">
       <div class="control-group">
         <label for="partSelect">내 파트</label>
@@ -50,8 +59,6 @@
         <label for="authorInput">작성자 (선택)</label>
         <input id="authorInput" type="text" placeholder="이름 입력" maxlength="20" />
       </div>
-      <div class="control-spacer"></div>
-      <button id="exportBtn" class="btn-secondary" type="button">CSV 내보내기</button>
     </section>
 
     <p class="edit-hint" id="editHint">
@@ -83,6 +90,11 @@
       <span class="legend-item"><span class="swatch sw-equal"></span>기준과 동일</span>
       <span class="legend-item"><span class="swatch sw-low"></span>기준보다 적음</span>
       <span class="legend-item"><span class="swatch sw-high"></span>기준보다 많음</span>
+    </section>
+
+    <!-- 하단: CSV 내보내기 -->
+    <section class="export-bar">
+      <button id="exportBtn" class="btn-secondary" type="button">⬇ CSV 내보내기</button>
     </section>
   </main>
 
