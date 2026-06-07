@@ -11,7 +11,6 @@ DB = "https://test-set-check-default-rtdb.asia-southeast1.firebasedatabase.app/s
 PARTS = [
     ("ne", "NE파트"), ("package", "패키지파트"), ("cmf1", "선행CMF1파트"),
     ("cmf2", "선행CMF2파트"), ("cmf3", "선행CMF3파트"), ("hinge", "HINGE개발LAB"),
-    ("bonding", "접합기술파트"),
 ]
 GROUPS = [
     ("strategic_hhp", "전략HHP"), ("innovative_hhp", "혁신HHP"), ("tablet", "태블릿"),
